@@ -8,10 +8,7 @@ export class SimpleShopUiComputeStage extends Stage {
 
         new SimpleShopUiComputeStack(this, 'SimpleShopUiComputeStack', {
             stackName: 'SimpleShopUiComputeStack',
-            env: {
-                account: this.account,
-                region: this.region,
-            }
+            env: props.env
         });
     }
 }

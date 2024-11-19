@@ -10,15 +10,17 @@ export class SimpleShopUiPipelineStack extends Stack {
 
         const githubConnectionArn = this.node.tryGetContext('githubConnectionArn') as string;
 
+        const githubRepository = this.node.tryGetContext('githubRepository') as string;
+
         const shell = new ShellStep('ShellStep', {
-            input: CodePipelineSource.connection('declanprice/simple-shop', 'main', {connectionArn: githubConnectionArn}),
-            installCommands: ['cd ui', 'npm install', 'npm run build', 'cd cdk', 'npm install'],
+            input: CodePipelineSource.connection(githubRepository, 'main', {connectionArn: githubConnectionArn}),
+            installCommands: ['cd ui', 'cd cdk', 'npm install'],
             commands: ['npm run cdk synth -- --output ../cdk.out'],
             primaryOutputDirectory: 'ui',
             env: {
                 AWS_ACCOUNT: this.account,
                 AWS_REGION: this.region,
-            }
+            },
         });
 
         const pipeline = new CodePipeline(this, 'CodePipeline', {
