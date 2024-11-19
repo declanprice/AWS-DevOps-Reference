@@ -1,5 +1,4 @@
 import {Construct} from 'constructs';
-
 import {Stage, StageProps} from "aws-cdk-lib";
 import {SimpleShopUiComputeStack} from "./simple-shop-ui-compute.stack";
 

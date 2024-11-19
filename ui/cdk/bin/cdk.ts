@@ -8,7 +8,7 @@ const app = new App();
 new SimpleShopUiPipelineStack(app, 'SimpleShopUiPipelineStack', {
     stackName: 'SimpleShopUiPipelineStack',
     env: {
-        region: 'ap-southeast-2',
+        region: process.env.AWS_REGION,
         account: process.env.AWS_ACCOUNT
     }
 })

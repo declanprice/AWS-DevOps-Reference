@@ -15,11 +15,14 @@ export class SimpleShopUiPipelineStack extends Stack {
             installCommands: ['cd ui', 'npm install', 'npm run build', 'cd cdk', 'npm install'],
             commands: ['npm run cdk synth -- --output ../cdk.out'],
             primaryOutputDirectory: 'ui',
+            env: {
+                AWS_ACCOUNT: this.account,
+                AWS_REGION: this.region,
+            }
         });
 
         const pipeline = new CodePipeline(this, 'CodePipeline', {
             synth: shell,
-
             selfMutation: false,
             role: new Role(this, 'SimpleShopUiPipelineRole', {
                 roleName: 'SimpleShopUiPipelineRole',
