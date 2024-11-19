@@ -21,7 +21,7 @@ export class SimpleShopUiPipelineStack extends Stack {
             input: CodePipelineSource.connection(githubRepository, 'main', {connectionArn: githubConnectionArn}),
             installCommands: ['cd ui', 'cd cdk', 'npm install'],
             commands: ['npm run cdk synth'],
-            primaryOutputDirectory: 'ui/cdk',
+            primaryOutputDirectory: 'ui/cdk/cdk.out',
             env: {
                 AWS_ACCOUNT: this.account,
                 AWS_REGION: this.region,
