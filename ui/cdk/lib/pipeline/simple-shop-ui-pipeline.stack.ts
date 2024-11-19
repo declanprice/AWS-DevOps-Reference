@@ -3,6 +3,7 @@ import {Stack, StackProps} from "aws-cdk-lib";
 import {CodePipeline, CodePipelineSource, ShellStep} from "aws-cdk-lib/pipelines";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {SimpleShopUiComputeStage} from "../compute/simple-shop-ui-compute.stage";
+import {Repository} from "aws-cdk-lib/aws-ecr";
 
 export class SimpleShopUiPipelineStack extends Stack {
     constructor(scope: Construct, id: string, props: StackProps) {
@@ -12,11 +13,15 @@ export class SimpleShopUiPipelineStack extends Stack {
 
         const githubRepository = this.node.tryGetContext('githubRepository') as string;
 
+        new Repository(this, 'SimpleShopUiEcrRepository', {
+            repositoryName: 'simple-shop-ui-ecr-repository',
+        });
+
         const shell = new ShellStep('ShellStep', {
             input: CodePipelineSource.connection(githubRepository, 'main', {connectionArn: githubConnectionArn}),
             installCommands: ['cd ui', 'cd cdk', 'npm install'],
-            commands: ['npm run cdk synth -- --output ../cdk.out'],
-            primaryOutputDirectory: 'ui',
+            commands: ['npm run cdk synth'],
+            primaryOutputDirectory: 'ui/cdk',
             env: {
                 AWS_ACCOUNT: this.account,
                 AWS_REGION: this.region,
