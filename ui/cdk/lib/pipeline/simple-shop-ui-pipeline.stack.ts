@@ -13,14 +13,21 @@ export class SimpleShopUiPipelineStack extends Stack {
 
         const githubRepository = this.node.tryGetContext('githubRepository') as string;
 
-        new Repository(this, 'SimpleShopUiEcrRepository', {
+        const ecrRepository = new Repository(this, 'SimpleShopUiEcrRepository', {
             repositoryName: 'simple-shop-ui-ecr-repository',
         });
 
         const shell = new ShellStep('ShellStep', {
             input: CodePipelineSource.connection(githubRepository, 'main', {connectionArn: githubConnectionArn}),
             installCommands: ['cd ui', 'cd cdk', 'npm install'],
-            commands: ['npm run cdk synth'],
+            commands: [
+                `aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ecrRepository.repositoryUri}`,
+                'npm run cdk synth',
+                'cd ..',
+                'docker build -t $GIT_COMMIT_ID .',
+                `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}`,
+                `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
+            ],
             primaryOutputDirectory: 'ui/cdk/cdk.out',
             env: {
                 AWS_ACCOUNT: this.account,
@@ -43,10 +50,20 @@ export class SimpleShopUiPipelineStack extends Stack {
                                 actions: ['sts:AssumeRole']
                             })
                         ]
+                    }),
+                    'ecr': new PolicyDocument({
+                        statements: [
+                            new PolicyStatement({
+                                effect: Effect.ALLOW,
+                                resources: ['*'],
+                                actions: ['ecr:*']
+                            })
+                        ]
                     })
                 }
             }),
         });
+
 
         pipeline.addStage(new SimpleShopUiComputeStage(this, 'SimpleShopUiComputeStage', props));
     }
