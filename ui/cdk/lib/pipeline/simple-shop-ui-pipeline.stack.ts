@@ -2,8 +2,8 @@ import {Construct} from 'constructs';
 import {Stack, StackProps} from "aws-cdk-lib";
 import {CodePipeline, CodePipelineSource, ShellStep} from "aws-cdk-lib/pipelines";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
-import {SimpleShopUiComputeStage} from "../compute/simple-shop-ui-compute.stage";
 import {Repository} from "aws-cdk-lib/aws-ecr";
+import {SimpleShopUiComputeStage} from "../compute/simple-shop-ui-compute.stage";
 
 export class SimpleShopUiPipelineStack extends Stack {
     constructor(scope: Construct, id: string, props: StackProps) {
@@ -17,26 +17,36 @@ export class SimpleShopUiPipelineStack extends Stack {
             repositoryName: 'simple-shop-ui-ecr-repository',
         });
 
+        const source = CodePipelineSource.connection(githubRepository, 'main', {connectionArn: githubConnectionArn});
+
         const shell = new ShellStep('ShellStep', {
-            input: CodePipelineSource.connection(githubRepository, 'main', {connectionArn: githubConnectionArn}),
-            installCommands: ['cd ui', 'cd cdk', 'npm install'],
+            input: source,
+            installCommands: ['cd ui', 'cd cdk', 'npm install', 'npm run cdk synth', 'cd ..'],
             commands: [
                 `aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ecrRepository.repositoryUri}`,
-                'npm run cdk synth',
-                'cd ..',
-                'docker build -t $GIT_COMMIT_ID .',
-                `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}`,
+                `docker build -t $GIT_COMMIT_ID .`,
+                `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
                 `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
             ],
             primaryOutputDirectory: 'ui/cdk/cdk.out',
             env: {
                 AWS_ACCOUNT: this.account,
                 AWS_REGION: this.region,
+                GIT_COMMIT_ID: source.sourceAttribute('CommitId')
             },
         });
 
         const pipeline = new CodePipeline(this, 'CodePipeline', {
             synth: shell,
+            synthCodeBuildDefaults: {
+                rolePolicy: [
+                    new PolicyStatement({
+                        effect: Effect.ALLOW,
+                        resources: ['*'],
+                        actions: ['ecr:*']
+                    })
+                ]
+            },
             selfMutation: false,
             role: new Role(this, 'SimpleShopUiPipelineRole', {
                 roleName: 'SimpleShopUiPipelineRole',
@@ -51,19 +61,9 @@ export class SimpleShopUiPipelineStack extends Stack {
                             })
                         ]
                     }),
-                    'ecr': new PolicyDocument({
-                        statements: [
-                            new PolicyStatement({
-                                effect: Effect.ALLOW,
-                                resources: ['*'],
-                                actions: ['ecr:*']
-                            })
-                        ]
-                    })
                 }
             }),
         });
-
 
         pipeline.addStage(new SimpleShopUiComputeStage(this, 'SimpleShopUiComputeStage', props));
     }
