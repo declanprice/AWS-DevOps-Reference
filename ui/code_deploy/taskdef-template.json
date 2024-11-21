@@ -15,7 +15,7 @@
     }
   ],
   "cpu": "256",
-  "family": "fargate-task-definition",
+  "family": "simple-shop-ui-family",
   "memory": "512",
   "networkMode": "awsvpc",
   "requiresCompatibilities": [

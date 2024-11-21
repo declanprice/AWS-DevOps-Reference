@@ -45,8 +45,10 @@ export class SimpleShopUiComputeStack extends Stack {
             serviceName: 'SimpleShopUiService',
             taskDefinition: new TaskDefinition(
                 this, 'SimpleShopUiTaskDefinition', {
+                    family: 'simple-shop-ui-family',
                     compatibility: Compatibility.FARGATE,
-                    cpu: '.25'
+                    cpu: '.25',
+                    memoryMiB: '512'
                 }
             )
         })
