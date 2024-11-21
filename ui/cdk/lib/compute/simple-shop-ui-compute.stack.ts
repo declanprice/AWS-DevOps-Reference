@@ -53,6 +53,7 @@ export class SimpleShopUiComputeStack extends Stack {
 
         new ComputeDeploymentResources(this, 'ComputeDeploymentResources', {
             defaultVpc,
+            service
         })
     }
 }
