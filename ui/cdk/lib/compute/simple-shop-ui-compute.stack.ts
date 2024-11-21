@@ -1,6 +1,6 @@
 import {Construct} from 'constructs';
 import {Stack, StackProps} from "aws-cdk-lib";
-import {Cluster,} from "aws-cdk-lib/aws-ecs";
+import {Cluster, Compatibility, FargateService, TaskDefinition} from "aws-cdk-lib/aws-ecs";
 import {IVpc, Peer, Port, SecurityGroup, Vpc} from "aws-cdk-lib/aws-ec2";
 import {
     ApplicationListener,
@@ -9,7 +9,7 @@ import {
     ApplicationTargetGroup
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
-import {EcsApplication} from "aws-cdk-lib/aws-codedeploy";
+import {EcsApplication, EcsDeploymentConfig, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
 
 export class SimpleShopUiComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -35,10 +35,21 @@ export class SimpleShopUiComputeStack extends Stack {
             }
         });
 
-        new Cluster(this, 'SimpleShopUiFargateCluster', {
+        const cluster = new Cluster(this, 'SimpleShopUiFargateCluster', {
             vpc: defaultVpc,
             clusterName: 'SimpleShopUiFargateCluster',
         });
+
+        const service = new FargateService(this, 'SimpleShopUiService', {
+            cluster,
+            serviceName: 'SimpleShopUiService',
+            taskDefinition: new TaskDefinition(
+                this, 'SimpleShopUiTaskDefinition', {
+                    compatibility: Compatibility.FARGATE,
+                    cpu: '.25'
+                }
+            )
+        })
 
         new ComputeDeploymentResources(this, 'ComputeDeploymentResources', {
             defaultVpc,
@@ -50,6 +61,7 @@ export class SimpleShopUiComputeStack extends Stack {
 class ComputeDeploymentResources extends Construct {
     constructor(scope: Construct, id: string, props: {
         defaultVpc: IVpc,
+        service: FargateService
     }) {
         super(scope, id);
 
@@ -84,7 +96,7 @@ class ComputeDeploymentResources extends Construct {
             protocol: ApplicationProtocol.HTTP
         })
 
-        new ApplicationListener(this, 'SimpleShopUiListener', {
+        const listener = new ApplicationListener(this, 'SimpleShopUiListener', {
             loadBalancer: alb,
             port: 3000,
             protocol: ApplicationProtocol.HTTP,
@@ -95,8 +107,20 @@ class ComputeDeploymentResources extends Construct {
             ]
         })
 
-        new EcsApplication(this, 'SimpleShopUiEcsApplication', {
+        const application = new EcsApplication(this, 'SimpleShopUiEcsApplication', {
             applicationName: 'SimpleShopUiEcsApplication',
         });
+
+        new EcsDeploymentGroup(this, 'SimpleShopUiEcsDeploymentGroup', {
+            service: props.service,
+            application,
+            deploymentGroupName: 'SimpleShopUiEcsDeploymentGroup',
+            deploymentConfig: EcsDeploymentConfig.ALL_AT_ONCE,
+            blueGreenDeploymentConfig: {
+                greenTargetGroup: greenTg,
+                blueTargetGroup: blueTg,
+                listener,
+            }
+        })
     }
 }
