@@ -36,7 +36,7 @@ export class SimpleShopUiPipelineStack extends Stack {
                 `docker build -t $GIT_COMMIT_ID .`,
                 `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
                 `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-                `./codedeploy-setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
+                `./codedeploy/codedeploy-setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
             ],
             primaryOutputDirectory: 'ui/cdk/cdk.out',
             env: {
@@ -45,6 +45,8 @@ export class SimpleShopUiPipelineStack extends Stack {
                 GIT_COMMIT_ID: source.sourceAttribute('CommitId')
             },
         });
+
+        shell.addOutputDirectory('code_deploy');
 
         const pipeline = new CodePipeline(this, 'CodePipeline', {
             synth: shell,
@@ -109,8 +111,8 @@ class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
                         })
                     },
                 }),
-                appSpecTemplateInput: new Artifact('ShellStep_Output'),
-                taskDefinitionTemplateInput: new Artifact('ShellStep_Output'),
+                appSpecTemplateInput: new Artifact('ShellStep_code_deploy'),
+                taskDefinitionTemplateInput: new Artifact('ShellStep_code_deploy'),
                 deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
                     this.scope,
                     'SimpleShopUiEcsDeploymentGroup',
