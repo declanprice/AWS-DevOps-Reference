@@ -46,7 +46,7 @@ export class SimpleShopUiPipelineStack extends Stack {
             },
         });
 
-        shell.addOutputDirectory('code_deploy');
+        shell.addOutputDirectory('ui/code_deploy');
 
         const pipeline = new CodePipeline(this, 'CodePipeline', {
             synth: shell,
@@ -111,8 +111,8 @@ class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
                         })
                     },
                 }),
-                appSpecTemplateInput: new Artifact('ShellStep_code_deploy'),
-                taskDefinitionTemplateInput: new Artifact('ShellStep_code_deploy'),
+                appSpecTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
+                taskDefinitionTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
                 deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
                     this.scope,
                     'SimpleShopUiEcsDeploymentGroup',
