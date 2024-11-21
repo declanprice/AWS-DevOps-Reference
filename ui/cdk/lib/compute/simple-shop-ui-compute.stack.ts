@@ -5,6 +5,7 @@ import {IVpc, Peer, Port, SecurityGroup, Vpc} from "aws-cdk-lib/aws-ec2";
 import {
     ApplicationListener,
     ApplicationLoadBalancer,
+    ApplicationProtocol,
     ApplicationTargetGroup
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
@@ -17,7 +18,7 @@ export class SimpleShopUiComputeStack extends Stack {
             isDefault: true
         });
 
-       new Role(this, 'SimpleShopUiExecutionRole', {
+        new Role(this, 'SimpleShopUiExecutionRole', {
             roleName: 'SimpleShopUiExecutionRole',
             assumedBy: new AnyPrincipal(),
             inlinePolicies: {
@@ -68,12 +69,12 @@ class ComputeDeploymentResources extends Construct {
             internetFacing: true
         });
 
-        new ApplicationTargetGroup(this, 'SimpleShopUiAlbBlueTargetGroup', {
+        const greenTg = new ApplicationTargetGroup(this, 'SimpleShopUiAlbBlueTargetGroup', {
             vpc: defaultVpc,
             targetGroupName: 'SimpleShopUiAlbBlueTargetGroup',
         });
 
-        new ApplicationTargetGroup(this, 'SimpleShopUiAlbGreenTargetGroup', {
+        const blueTg = new ApplicationTargetGroup(this, 'SimpleShopUiAlbGreenTargetGroup', {
             vpc: defaultVpc,
             targetGroupName: 'SimpleShopUiAlbGreenTargetGroup',
         })
@@ -81,7 +82,12 @@ class ComputeDeploymentResources extends Construct {
         new ApplicationListener(this, 'SimpleShopUiListener', {
             loadBalancer: alb,
             port: 3000,
+            protocol: ApplicationProtocol.HTTP,
             open: true,
+            defaultTargetGroups: [
+                greenTg,
+                blueTg
+            ]
         })
     }
 }
