@@ -52,16 +52,17 @@ export class SimpleShopUiComputeStack extends Stack {
             this, 'SimpleShopUiTaskDefinition', {
                 family: 'simple-shop-ui-family',
                 compatibility: Compatibility.FARGATE,
-                cpu: '.25',
-                memoryMiB: '512'
+                cpu: '256',
+                memoryMiB: '512',
             },
         );
 
         taskDef.addContainer('SimpleShopUiContainer', {
             containerName: 'simple-shop-ui',
             image: ContainerImage.fromEcrRepository(Repository.fromRepositoryName(this, 'SimpleShopUiEcrRepository', 'simple-shop-ui-ecr-repository'), 'latest'),
-            cpu: .25,
+            cpu: 256,
             memoryLimitMiB: 512,
+            essential: true
         });
 
         const service = new FargateService(this, 'SimpleShopUiService', {
