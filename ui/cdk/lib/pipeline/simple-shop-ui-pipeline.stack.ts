@@ -37,7 +37,7 @@ export class SimpleShopUiPipelineStack extends Stack {
                 `docker build -t $GIT_COMMIT_ID .`,
                 `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
                 `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-                './codedeploy-setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID'
+                `./codedeploy-setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
             ],
             primaryOutputDirectory: 'ui/cdk/cdk.out',
             env: {
