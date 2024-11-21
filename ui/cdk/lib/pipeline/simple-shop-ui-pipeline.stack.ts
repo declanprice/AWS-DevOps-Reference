@@ -1,9 +1,19 @@
 import {Construct} from 'constructs';
 import {Stack, StackProps} from "aws-cdk-lib";
-import {CodePipeline, CodePipelineSource, ShellStep} from "aws-cdk-lib/pipelines";
-import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
+import {
+    CodePipeline, CodePipelineActionFactoryResult,
+    CodePipelineSource,
+    ICodePipelineActionFactory,
+    ProduceActionOptions,
+    ShellStep,
+    Step
+} from "aws-cdk-lib/pipelines";
+import {AccountPrincipal, AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {Repository} from "aws-cdk-lib/aws-ecr";
 import {SimpleShopUiComputeStage} from "../compute/simple-shop-ui-compute.stage";
+import {EcsDeployAction, CodeDeployEcsDeployAction} from "aws-cdk-lib/aws-codepipeline-actions";
+import {Artifact, IStage} from "aws-cdk-lib/aws-codepipeline";
+import {EcsApplication, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
 
 export class SimpleShopUiPipelineStack extends Stack {
     constructor(scope: Construct, id: string, props: StackProps) {
@@ -65,6 +75,58 @@ export class SimpleShopUiPipelineStack extends Stack {
             }),
         });
 
-        pipeline.addStage(new SimpleShopUiComputeStage(this, 'SimpleShopUiComputeStage', props));
+        const stage = pipeline.addStage(new SimpleShopUiComputeStage(this, 'SimpleShopUiComputeStage', props));
+
+        stage.addPost();
+
+    }
+}
+
+class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
+    constructor(readonly scope: Construct) {
+        super('CodeDeployStep')
+
+        this.discoverReferencedOutputs({
+            env: {
+            },
+        })
+    }
+
+    public produceAction(stage: IStage): CodePipelineActionFactoryResult {
+        stage.addAction(
+            new CodeDeployEcsDeployAction({
+                actionName: 'Deploy',
+                role: new Role(this.scope, 'PrivateUniverseCodeDeployRole', {
+                    roleName: 'PrivateUniverseCodeDeployRole',
+                    assumedBy: new AccountPrincipal(Stack.of(this.scope).account),
+                    inlinePolicies: {
+                        'access': new PolicyDocument({
+                            statements: [
+                                new PolicyStatement({
+                                    effect: Effect.ALLOW,
+                                    resources: ['*'],
+                                    actions: ['*']
+                                })
+                            ]
+                        })
+                    },
+                }),
+                deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
+                    this.scope,
+                    'SimpleShopUiEcsDeploymentGroup',
+                    {
+                        deploymentGroupName: 'SimpleShopUiEcsDeploymentGroup',
+                        application: EcsApplication.fromEcsApplicationName(
+                            this.scope,
+                            'SimpleShopUiEcsApplication',
+                            'SimpleShopUiEcsApplication'
+                        ),
+                    }
+                ),
+                runOrder: 3,
+            })
+        )
+
+        return {runOrdersConsumed: 1}
     }
 }

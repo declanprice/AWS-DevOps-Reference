@@ -1,0 +1,24 @@
+{
+  "executionRoleArn": "<EXECUTION_ROLE_ARN>",
+  "containerDefinitions": [
+    {
+      "essential": true,
+      "image": "<IMAGE_NAME>",
+      "name": "simple-shop-ui",
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "hostPort": 3000,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ],
+  "cpu": "256",
+  "family": "fargate-task-definition",
+  "memory": "512",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ]
+}

@@ -1,2 +1,9 @@
-cdk
-node_modules
+**/node_modules/
+**/cdk/
+**/.next
+.git
+npm-debug.log
+.coverage
+.coverage.*
+.env
+.aws

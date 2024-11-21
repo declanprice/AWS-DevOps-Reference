@@ -1,7 +1,17 @@
 import {Construct} from 'constructs';
 import {Stack, StackProps} from "aws-cdk-lib";
-import {Cluster} from "aws-cdk-lib/aws-ecs";
-import {Vpc} from "aws-cdk-lib/aws-ec2";
+import {
+    Cluster,
+    FargateService,
+    FargateTaskDefinition,
+} from "aws-cdk-lib/aws-ecs";
+import {IVpc, Peer, Port, SecurityGroup, Vpc} from "aws-cdk-lib/aws-ec2";
+import {EcsApplication, EcsDeploymentConfig, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
+import {
+    ApplicationListener,
+    ApplicationLoadBalancer,
+    ApplicationTargetGroup
+} from "aws-cdk-lib/aws-elasticloadbalancingv2";
 
 export class SimpleShopUiComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -16,9 +26,50 @@ export class SimpleShopUiComputeStack extends Stack {
             clusterName: 'SimpleShopUiFargateCluster',
         });
 
-        // const service = new FargateService(this, 'SimpleShopUiFargateService', {
-        //     serviceName: 'SimpleShopUiFargateService',
-        //     cluster,
-        // })
+        new ComputeDeploymentResources(this, 'ComputeDeploymentResources', {
+            defaultVpc,
+        })
+    }
+}
+
+
+class ComputeDeploymentResources extends Construct {
+    constructor(scope: Construct, id: string, props: {
+        defaultVpc: IVpc,
+    }) {
+        super(scope, id);
+
+        const defaultVpc = props.defaultVpc;
+
+        const albSecurityGroup = new SecurityGroup(this, 'SimpleShopUiAlbSg', {
+            vpc: defaultVpc,
+            securityGroupName: 'SimpleShopUiAlbSg',
+            allowAllOutbound: true
+        })
+
+        albSecurityGroup.addIngressRule(Peer.ipv4('211.27.183.118/32'), Port.allTraffic());
+
+        const alb = new ApplicationLoadBalancer(this, 'SimpleShopUiAlb', {
+            vpc: defaultVpc,
+            loadBalancerName: 'SimpleShopUiAlb',
+            securityGroup: albSecurityGroup,
+            internetFacing: true
+        });
+
+        new ApplicationTargetGroup(this, 'SimpleShopUiAlbBlueTargetGroup', {
+            vpc: defaultVpc,
+            targetGroupName: 'SimpleShopUiAlbBlueTargetGroup',
+        });
+
+        new ApplicationTargetGroup(this, 'SimpleShopUiAlbGreenTargetGroup', {
+            vpc: defaultVpc,
+            targetGroupName: 'SimpleShopUiAlbGreenTargetGroup',
+        })
+
+        new ApplicationListener(this, 'SimpleShopUiListener', {
+            loadBalancer: alb,
+            port: 3000,
+            open: true,
+        })
     }
 }
