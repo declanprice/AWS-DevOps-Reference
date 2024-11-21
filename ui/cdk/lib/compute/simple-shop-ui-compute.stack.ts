@@ -1,17 +1,13 @@
 import {Construct} from 'constructs';
 import {Stack, StackProps} from "aws-cdk-lib";
-import {
-    Cluster,
-    FargateService,
-    FargateTaskDefinition,
-} from "aws-cdk-lib/aws-ecs";
+import {Cluster,} from "aws-cdk-lib/aws-ecs";
 import {IVpc, Peer, Port, SecurityGroup, Vpc} from "aws-cdk-lib/aws-ec2";
-import {EcsApplication, EcsDeploymentConfig, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
 import {
     ApplicationListener,
     ApplicationLoadBalancer,
     ApplicationTargetGroup
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 
 export class SimpleShopUiComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -19,6 +15,22 @@ export class SimpleShopUiComputeStack extends Stack {
 
         const defaultVpc = Vpc.fromLookup(this, 'DefaultVpc', {
             isDefault: true
+        });
+
+       new Role(this, 'SimpleShopUiExecutionRole', {
+            roleName: 'SimpleShopUiExecutionRole',
+            assumedBy: new AnyPrincipal(),
+            inlinePolicies: {
+                'access': new PolicyDocument({
+                    statements: [
+                        new PolicyStatement({
+                            effect: Effect.ALLOW,
+                            resources: ['*'],
+                            actions: ['*']
+                        })
+                    ]
+                })
+            }
         });
 
         new Cluster(this, 'SimpleShopUiFargateCluster', {

@@ -1,5 +1,5 @@
 {
-  "executionRoleArn": "<EXECUTION_ROLE_ARN>",
+  "executionRoleArn": "arn:aws:iam::518424097895:role/SimpleShopUiExecutionRole",
   "containerDefinitions": [
     {
       "essential": true,

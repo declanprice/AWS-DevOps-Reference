@@ -36,7 +36,8 @@ export class SimpleShopUiPipelineStack extends Stack {
                 `aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ecrRepository.repositoryUri}`,
                 `docker build -t $GIT_COMMIT_ID .`,
                 `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-                `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
+                `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
+                './codedeploy-setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID'
             ],
             primaryOutputDirectory: 'ui/cdk/cdk.out',
             env: {
@@ -77,8 +78,7 @@ export class SimpleShopUiPipelineStack extends Stack {
 
         const stage = pipeline.addStage(new SimpleShopUiComputeStage(this, 'SimpleShopUiComputeStage', props));
 
-        stage.addPost();
-
+        stage.addPost(new EcsCodeDeployStep(this));
     }
 }
 
@@ -87,8 +87,7 @@ class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
         super('CodeDeployStep')
 
         this.discoverReferencedOutputs({
-            env: {
-            },
+            env: {},
         })
     }
 
@@ -96,8 +95,8 @@ class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
         stage.addAction(
             new CodeDeployEcsDeployAction({
                 actionName: 'Deploy',
-                role: new Role(this.scope, 'PrivateUniverseCodeDeployRole', {
-                    roleName: 'PrivateUniverseCodeDeployRole',
+                role: new Role(this.scope, 'SimpleShopUiCodeDeployRole', {
+                    roleName: 'SimpleShopUiCodeDeployRole',
                     assumedBy: new AccountPrincipal(Stack.of(this.scope).account),
                     inlinePolicies: {
                         'access': new PolicyDocument({
@@ -111,6 +110,8 @@ class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
                         })
                     },
                 }),
+                appSpecTemplateInput: new Artifact('ShellStep_Output'),
+                taskDefinitionTemplateInput: new Artifact('ShellStep_Output'),
                 deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
                     this.scope,
                     'SimpleShopUiEcsDeploymentGroup',
