@@ -9,6 +9,7 @@ import {
     ApplicationTargetGroup
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
+import {EcsApplication} from "aws-cdk-lib/aws-codedeploy";
 
 export class SimpleShopUiComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -93,5 +94,9 @@ class ComputeDeploymentResources extends Construct {
                 blueTg
             ]
         })
+
+        new EcsApplication(this, 'SimpleShopUiEcsApplication', {
+            applicationName: 'SimpleShopUiEcsApplication',
+        });
     }
 }
