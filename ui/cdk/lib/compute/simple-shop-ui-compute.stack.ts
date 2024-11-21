@@ -72,11 +72,15 @@ class ComputeDeploymentResources extends Construct {
         const greenTg = new ApplicationTargetGroup(this, 'SimpleShopUiAlbBlueTargetGroup', {
             vpc: defaultVpc,
             targetGroupName: 'SimpleShopUiAlbBlueTargetGroup',
+            port: 3000,
+            protocol: ApplicationProtocol.HTTP
         });
 
         const blueTg = new ApplicationTargetGroup(this, 'SimpleShopUiAlbGreenTargetGroup', {
             vpc: defaultVpc,
             targetGroupName: 'SimpleShopUiAlbGreenTargetGroup',
+            port: 3000,
+            protocol: ApplicationProtocol.HTTP
         })
 
         new ApplicationListener(this, 'SimpleShopUiListener', {
