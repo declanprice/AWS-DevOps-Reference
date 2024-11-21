@@ -1,6 +1,13 @@
 import {Construct} from 'constructs';
 import {Stack, StackProps} from "aws-cdk-lib";
-import {Cluster, Compatibility, DeploymentControllerType, FargateService, TaskDefinition} from "aws-cdk-lib/aws-ecs";
+import {
+    Cluster,
+    Compatibility,
+    ContainerImage,
+    DeploymentControllerType,
+    FargateService,
+    TaskDefinition
+} from "aws-cdk-lib/aws-ecs";
 import {IVpc, Peer, Port, SecurityGroup, Vpc} from "aws-cdk-lib/aws-ec2";
 import {
     ApplicationListener,
@@ -10,6 +17,7 @@ import {
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {EcsApplication, EcsDeploymentConfig, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
+import {Repository} from "aws-cdk-lib/aws-ecr";
 
 export class SimpleShopUiComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -40,20 +48,29 @@ export class SimpleShopUiComputeStack extends Stack {
             clusterName: 'SimpleShopUiFargateCluster',
         });
 
+        const taskDef = new TaskDefinition(
+            this, 'SimpleShopUiTaskDefinition', {
+                family: 'simple-shop-ui-family',
+                compatibility: Compatibility.FARGATE,
+                cpu: '.25',
+                memoryMiB: '512'
+            },
+        );
+
+        taskDef.addContainer('SimpleShopUiContainer', {
+            containerName: 'simple-shop-ui',
+            image: ContainerImage.fromEcrRepository(Repository.fromRepositoryName(this, 'SimpleShopUiEcrRepository', 'simple-shop-ui-ecr-repository'), 'latest'),
+            cpu: .25,
+            memoryLimitMiB: 512,
+        });
+
         const service = new FargateService(this, 'SimpleShopUiService', {
             cluster,
             serviceName: 'SimpleShopUiService',
-            taskDefinition: new TaskDefinition(
-                this, 'SimpleShopUiTaskDefinition', {
-                    family: 'simple-shop-ui-family',
-                    compatibility: Compatibility.FARGATE,
-                    cpu: '.25',
-                    memoryMiB: '512'
-                }
-            ),
+            taskDefinition: taskDef,
             deploymentController: {
                 type: DeploymentControllerType.CODE_DEPLOY
-            }
+            },
         })
 
         new ComputeDeploymentResources(this, 'ComputeDeploymentResources', {
