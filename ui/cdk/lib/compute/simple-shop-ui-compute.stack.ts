@@ -1,6 +1,6 @@
 import {Construct} from 'constructs';
 import {Stack, StackProps} from "aws-cdk-lib";
-import {Cluster, Compatibility, FargateService, TaskDefinition} from "aws-cdk-lib/aws-ecs";
+import {Cluster, Compatibility, DeploymentControllerType, FargateService, TaskDefinition} from "aws-cdk-lib/aws-ecs";
 import {IVpc, Peer, Port, SecurityGroup, Vpc} from "aws-cdk-lib/aws-ec2";
 import {
     ApplicationListener,
@@ -50,7 +50,10 @@ export class SimpleShopUiComputeStack extends Stack {
                     cpu: '.25',
                     memoryMiB: '512'
                 }
-            )
+            ),
+            deploymentController: {
+                type: DeploymentControllerType.CODE_DEPLOY
+            }
         })
 
         new ComputeDeploymentResources(this, 'ComputeDeploymentResources', {
