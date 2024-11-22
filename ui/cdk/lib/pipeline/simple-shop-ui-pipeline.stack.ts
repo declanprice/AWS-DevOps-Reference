@@ -10,7 +10,7 @@ import {
 import {AccountPrincipal, AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {Repository} from "aws-cdk-lib/aws-ecr";
 import {SimpleShopUiComputeStage} from "../compute/simple-shop-ui-compute.stage";
-import {CodeDeployEcsDeployAction, ManualApprovalAction} from "aws-cdk-lib/aws-codepipeline-actions";
+import {CodeDeployEcsDeployAction} from "aws-cdk-lib/aws-codepipeline-actions";
 import {Artifact, IStage} from "aws-cdk-lib/aws-codepipeline";
 import {EcsApplication, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
 
@@ -127,7 +127,7 @@ class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
                         ),
                     }
                 ),
-                runOrder: 3,
+                runOrder: 4,
             })
         )
 
