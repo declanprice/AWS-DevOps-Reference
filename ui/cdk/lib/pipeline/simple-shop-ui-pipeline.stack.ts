@@ -106,6 +106,7 @@ export class SimpleShopUiPipelineStack extends Stack {
             project: new Project(this, 'SimpleShopUiPipelineBuildProject', {
                 projectName: 'SimpleShopUiPipelineBuildProject',
                 buildSpec: BuildSpec.fromObject({
+                    version: '0.2',
                     phases: {
                         install: {
                             commands: ['cd ui', 'cd cdk', 'npm install', 'npm run cdk synth', 'cd ..']
