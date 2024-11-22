@@ -11,4 +11,12 @@ new SimpleShopUiPipelineStack(app, 'SimpleShopUiPipelineStack', {
         region: process.env.AWS_REGION,
         account: process.env.AWS_ACCOUNT
     }
+});
+
+new SimpleShopUiPipelineStack(app, 'SimpleShopUiComputeStack', {
+    stackName: 'SimpleShopUiComputeStack',
+    env: {
+        region: process.env.AWS_REGION,
+        account: process.env.AWS_ACCOUNT
+    }
 })

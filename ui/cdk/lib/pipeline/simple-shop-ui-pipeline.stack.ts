@@ -1,18 +1,14 @@
 import {Construct} from 'constructs';
-import {Stack, StackProps} from "aws-cdk-lib";
-import {
-    CodePipeline, CodePipelineActionFactoryResult,
-    CodePipelineSource,
-    ICodePipelineActionFactory, ManualApprovalStep,
-    ShellStep,
-    Step
-} from "aws-cdk-lib/pipelines";
-import {AccountPrincipal, AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
+import {RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
+import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {Repository} from "aws-cdk-lib/aws-ecr";
-import {SimpleShopUiComputeStage} from "../compute/simple-shop-ui-compute.stage";
-import {CodeDeployEcsDeployAction} from "aws-cdk-lib/aws-codepipeline-actions";
-import {Artifact, IStage} from "aws-cdk-lib/aws-codepipeline";
-import {EcsApplication, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
+import {
+    CloudFormationCreateUpdateStackAction,
+    CodeBuildAction,
+    CodeStarConnectionsSourceAction
+} from "aws-cdk-lib/aws-codepipeline-actions";
+import {Artifact, Pipeline, PipelineType, ProviderType} from "aws-cdk-lib/aws-codepipeline";
+import {BuildEnvironmentVariableType, BuildSpec, Project} from "aws-cdk-lib/aws-codebuild";
 
 export class SimpleShopUiPipelineStack extends Stack {
     constructor(scope: Construct, id: string, props: StackProps) {
@@ -20,47 +16,51 @@ export class SimpleShopUiPipelineStack extends Stack {
 
         const githubConnectionArn = this.node.tryGetContext('githubConnectionArn') as string;
 
-        const githubRepository = this.node.tryGetContext('githubRepository') as string;
+        // const githubRepository = this.node.tryGetContext('githubRepository') as string;
 
         const ecrRepository = new Repository(this, 'SimpleShopUiEcrRepository', {
             repositoryName: 'simple-shop-ui-ecr-repository',
+            removalPolicy: RemovalPolicy.DESTROY,
         });
 
-        const source = CodePipelineSource.connection(githubRepository, 'main', {connectionArn: githubConnectionArn});
+        const sourceArtifact = new Artifact('SourceArtifact');
 
-        const shell = new ShellStep('ShellStep', {
-            input: source,
-            installCommands: ['cd ui', 'cd cdk', 'npm install', 'npm run cdk synth', 'cd ..'],
-            commands: [
-                `aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ecrRepository.repositoryUri}`,
-                `docker build -t $GIT_COMMIT_ID .`,
-                `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-                `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-                `./code_deploy/setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
-            ],
-            primaryOutputDirectory: 'ui/cdk/cdk.out',
-            env: {
-                AWS_ACCOUNT: this.account,
-                AWS_REGION: this.region,
-                GIT_COMMIT_ID: source.sourceAttribute('CommitId')
-            },
-        });
+        const outputArtifact = new Artifact('Output');
 
-        shell.addOutputDirectory('ui/code_deploy');
+        // const shell = new ShellStep('ShellStep', {
+        //     input: source,
+        //     installCommands: ['cd ui', 'cd cdk', 'npm install', 'npm run cdk synth', 'cd ..'],
+        //     commands: [
+        //         `aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ecrRepository.repositoryUri}`,
+        //         `docker build -t $GIT_COMMIT_ID .`,
+        //         `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
+        //         `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
+        //         `./code_deploy/setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
+        //     ],
+        //     primaryOutputDirectory: 'ui/cdk/cdk.out',
+        //     env: {
+        //         AWS_ACCOUNT: this.account,
+        //         AWS_REGION: this.region,
+        //         GIT_COMMIT_ID: source.sourceAttribute('CommitId')
+        //     },
+        // });
+        //
+        // shell.addOutputDirectory('ui/code_deploy');
 
-        const pipeline = new CodePipeline(this, 'CodePipeline', {
-            synth: shell,
+        const sourceAction = new CodeStarConnectionsSourceAction(
+            {
+                actionName: "Source",
+                connectionArn: githubConnectionArn,
+                output: sourceArtifact,
+                owner: "declanprice",
+                repo: 'simple-shop',
+                branch: 'main'
+            }
+        );
 
-            synthCodeBuildDefaults: {
-                rolePolicy: [
-                    new PolicyStatement({
-                        effect: Effect.ALLOW,
-                        resources: ['*'],
-                        actions: ['ecr:*']
-                    })
-                ]
-            },
-            selfMutation: false,
+        const pipeline = new Pipeline(this, 'SimpleShopUiPipeline', {
+            pipelineName: 'SimpleShopUiPipeline',
+            pipelineType: PipelineType.V2,
             role: new Role(this, 'SimpleShopUiPipelineRole', {
                 roleName: 'SimpleShopUiPipelineRole',
                 assumedBy: new AnyPrincipal(),
@@ -76,63 +76,161 @@ export class SimpleShopUiPipelineStack extends Stack {
                     }),
                 }
             }),
+            triggers: [{
+                providerType: ProviderType.CODE_STAR_SOURCE_CONNECTION,
+                gitConfiguration: {
+                    sourceAction: sourceAction,
+                    pullRequestFilter: [{
+                        branchesIncludes: ['main'],
+                        filePathsIncludes: ['ui/**']
+                    }]
+                }
+            }]
         });
 
+        pipeline.addStage({
+            stageName: 'Source',
+            actions: [sourceAction]
+        });
 
-        const stage = pipeline.addStage(new SimpleShopUiComputeStage(this, 'SimpleShopUiComputeStage', props));
+        const build = pipeline.addStage({
+            stageName: 'Build',
+        });
 
-        stage.addPost(new ManualApprovalStep('SimpleShopUiApproveDeployment'));
-
-        stage.addPost(new EcsCodeDeployStep(this));
-    }
-}
-
-class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
-    constructor(readonly scope: Construct) {
-        super('CodeDeployStep')
-
-        this.discoverReferencedOutputs({
-            env: {},
-        })
-    }
-
-    public produceAction(stage: IStage): CodePipelineActionFactoryResult {
-        stage.addAction(
-            new CodeDeployEcsDeployAction({
-                actionName: 'Deploy',
-                role: new Role(this.scope, 'SimpleShopUiCodeDeployRole', {
-                    roleName: 'SimpleShopUiCodeDeployRole',
-                    assumedBy: new AccountPrincipal(Stack.of(this.scope).account),
-                    inlinePolicies: {
-                        'access': new PolicyDocument({
-                            statements: [
-                                new PolicyStatement({
-                                    effect: Effect.ALLOW,
-                                    resources: ['*'],
-                                    actions: ['*']
-                                })
+        build.addAction(new CodeBuildAction({
+            actionName: "Build",
+            input: sourceArtifact,
+            outputs: [
+                outputArtifact,
+            ],
+            project: new Project(this, 'SimpleShopUiPipelineBuildProject', {
+                projectName: 'SimpleShopUiPipelineBuildProject',
+                buildSpec: BuildSpec.fromObject({
+                    phases: {
+                        install: {
+                            commands: ['cd ui', 'cd cdk', 'npm install', 'npm run cdk synth', 'cd ..']
+                        },
+                        build: {
+                            commands: [
+                                `aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ecrRepository.repositoryUri}`,
+                                `docker build -t $GIT_COMMIT_ID .`,
+                                `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
+                                `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
+                                `./code_deploy/setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
                             ]
-                        })
+                        }
                     },
-                }),
-                appSpecTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
-                taskDefinitionTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
-                deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
-                    this.scope,
-                    'SimpleShopUiEcsDeploymentGroup',
-                    {
-                        deploymentGroupName: 'SimpleShopUiEcsDeploymentGroup',
-                        application: EcsApplication.fromEcsApplicationName(
-                            this.scope,
-                            'SimpleShopUiEcsApplication',
-                            'SimpleShopUiEcsApplication'
-                        ),
+                    artifacts: {
+                        files: ['cdk.out'],
+                        'secondary-artifacts': {
+                            'code_deploy': {
+                                files: ['code_deploy']
+                            }
+                        }
                     }
-                ),
-                runOrder: 4,
-            })
-        )
+                })
+            }),
+            role: new Role(this, 'SimpleShopUiPipelineBuildRole', {
+                roleName: 'SimpleShopUiPipelineBuildRole',
+                assumedBy: new AnyPrincipal(),
+                inlinePolicies: {
+                    'sts': new PolicyDocument({
+                        statements: [
+                            new PolicyStatement({
+                                effect: Effect.ALLOW,
+                                resources: ['*'],
+                                actions: ['*']
+                            })
+                        ]
+                    }),
+                }
+            }),
+            environmentVariables: {
+                AWS_ACCOUNT: {
+                    type: BuildEnvironmentVariableType.PLAINTEXT,
+                    value: this.account
+                },
+                AWS_REGION: {
+                    type: BuildEnvironmentVariableType.PLAINTEXT,
+                    value: this.region
+                },
+                GIT_COMMIT_ID: {
+                    type: BuildEnvironmentVariableType.PLAINTEXT,
+                    value: sourceAction.variables.commitId
+                }
+            }
+        }));
 
-        return {runOrdersConsumed: 1}
+        const devStage = pipeline.addStage({
+            stageName: 'Dev',
+        });
+
+        devStage.addAction(new CloudFormationCreateUpdateStackAction({
+            actionName: 'DeployCompute',
+            stackName: 'SimpleShopUiComputeStack',
+            region: this.region,
+            account: this.account,
+            adminPermissions: true,
+            templatePath: outputArtifact.atPath('SimpleShopUiComputeStack')
+        }));
+
+        //     stage.addAction(new ManualApprovalAction({
+        //         actionName: 'ManualApproval',
+        //         runOrder: 3
+        //     }));
+        //
+        //     stage.addAction(new CodeDeployEcsDeployAction({
+        //             actionName: 'Deploy',
+        //             role: new Role(this, 'SimpleShopUiCodeDeployRole', {
+        //                 roleName: 'SimpleShopUiCodeDeployRole',
+        //                 assumedBy: new AccountPrincipal(Stack.of(this).account),
+        //                 inlinePolicies: {
+        //                     'access': new PolicyDocument({
+        //                         statements: [
+        //                             new PolicyStatement({
+        //                                 effect: Effect.ALLOW,
+        //                                 resources: ['*'],
+        //                                 actions: ['*']
+        //                             })
+        //                         ]
+        //                     })
+        //                 },
+        //             }),
+        //             appSpecTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
+        //             taskDefinitionTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
+        //             deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
+        //                 this,
+        //                 'SimpleShopUiEcsDeploymentGroup',
+        //                 {
+        //                     deploymentGroupName: 'SimpleShopUiEcsDeploymentGroup',
+        //                     application: EcsApplication.fromEcsApplicationName(
+        //                         this,
+        //                         'SimpleShopUiEcsApplication',
+        //                         'SimpleShopUiEcsApplication'
+        //                     ),
+        //                 }
+        //             ),
+        //             runOrder: 4,
+        //         })
+        //     );
+        // }
     }
 }
+
+
+// class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
+//     constructor(readonly scope: Construct) {
+//         super('CodeDeployStep')
+//
+//         this.discoverReferencedOutputs({
+//             env: {},
+//         })
+//     }
+//
+//     public produceAction(stage: IStage): CodePipelineActionFactoryResult {
+//         stage.addAction(
+//
+//
+//         return {runOrdersConsumed: 1}
+//     }
+// }
