@@ -18,7 +18,6 @@ import {
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {EcsApplication, EcsDeploymentConfig, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
-import {Repository} from "aws-cdk-lib/aws-ecr";
 import {ApplicationLoadBalancedFargateService} from "aws-cdk-lib/aws-ecs-patterns";
 
 export class SimpleShopUiComputeStack extends Stack {
@@ -58,6 +57,12 @@ export class SimpleShopUiComputeStack extends Stack {
             clusterName: 'SimpleShopUiFargateCluster',
         });
 
+
+        /** Important to understand!
+         *
+         * This task definition and container is only created on the first stack creation.  Subsequent task definition revisions will be created
+         when the code deploy action is submitted in the pipeline.
+         */
         const taskDef = new TaskDefinition(
             this, 'SimpleShopUiTaskDefinition', {
                 family: 'simple-shop-ui-family',
@@ -70,7 +75,7 @@ export class SimpleShopUiComputeStack extends Stack {
 
         taskDef.addContainer('SimpleShopUiContainer', {
             containerName: 'simple-shop-ui-container',
-            image: ContainerImage.fromEcrRepository(Repository.fromRepositoryName(this, 'SimpleShopUiEcrRepository', 'simple-shop-ui-ecr-repository')),
+            image: ContainerImage.fromAsset('..'),
             cpu: 256,
             memoryLimitMiB: 512,
             essential: true,
@@ -153,7 +158,7 @@ class ComputeDeploymentResources extends Construct {
                 greenTargetGroup: greenTg,
                 listener: props.service.listener,
                 testListener: greenListener,
-                terminationWaitTime: Duration.minutes(5),
+                terminationWaitTime: Duration.minutes(1),
             },
         });
     }
