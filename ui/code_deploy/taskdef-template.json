@@ -4,7 +4,7 @@
     {
       "essential": true,
       "image": "<IMAGE_NAME>",
-      "name": "simple-shop-ui",
+      "name": "simple-shop-ui-container",
       "portMappings": [
         {
           "containerPort": 3000,

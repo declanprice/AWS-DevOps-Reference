@@ -1,23 +1,25 @@
 import {Construct} from 'constructs';
-import {Stack, StackProps} from "aws-cdk-lib";
+import {Duration, Stack, StackProps} from "aws-cdk-lib";
 import {
     Cluster,
     Compatibility,
     ContainerImage,
     DeploymentControllerType,
-    FargateService,
+    LogDriver,
+    Protocol,
     TaskDefinition
 } from "aws-cdk-lib/aws-ecs";
 import {IVpc, Peer, Port, SecurityGroup, Vpc} from "aws-cdk-lib/aws-ec2";
 import {
-    ApplicationListener,
-    ApplicationLoadBalancer,
     ApplicationProtocol,
-    ApplicationTargetGroup
+    ApplicationTargetGroup,
+    ListenerAction,
+    TargetType
 } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {EcsApplication, EcsDeploymentConfig, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
 import {Repository} from "aws-cdk-lib/aws-ecr";
+import {ApplicationLoadBalancedFargateService} from "aws-cdk-lib/aws-ecs-patterns";
 
 export class SimpleShopUiComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -27,7 +29,15 @@ export class SimpleShopUiComputeStack extends Stack {
             isDefault: true
         });
 
-        new Role(this, 'SimpleShopUiExecutionRole', {
+        const albSecurityGroup = new SecurityGroup(this, 'SimpleShopUiAlbSg', {
+            vpc: defaultVpc,
+            securityGroupName: 'SimpleShopUiAlbSg',
+            allowAllOutbound: true
+        });
+
+        albSecurityGroup.addIngressRule(Peer.anyIpv4(), Port.allTcp());
+
+        const executionRole = new Role(this, 'SimpleShopUiExecutionRole', {
             roleName: 'SimpleShopUiExecutionRole',
             assumedBy: new AnyPrincipal(),
             inlinePolicies: {
@@ -54,30 +64,51 @@ export class SimpleShopUiComputeStack extends Stack {
                 compatibility: Compatibility.FARGATE,
                 cpu: '256',
                 memoryMiB: '512',
+                executionRole: executionRole,
             },
         );
 
         taskDef.addContainer('SimpleShopUiContainer', {
-            containerName: 'simple-shop-ui',
-            image: ContainerImage.fromEcrRepository(Repository.fromRepositoryName(this, 'SimpleShopUiEcrRepository', 'simple-shop-ui-ecr-repository'), 'latest'),
+            containerName: 'simple-shop-ui-container',
+            image: ContainerImage.fromEcrRepository(Repository.fromRepositoryName(this, 'SimpleShopUiEcrRepository', 'simple-shop-ui-ecr-repository')),
             cpu: 256,
             memoryLimitMiB: 512,
-            essential: true
+            essential: true,
+            logging: LogDriver.awsLogs({
+                streamPrefix: 'simple-shop-ui-container-logs',
+            }),
+            healthCheck: {
+                "command": [
+                    "CMD-SHELL",
+                    "curl -f http://127.0.0.1:3000/ || exit 1"
+                ],
+                interval: Duration.seconds(30),
+                timeout: Duration.seconds(5),
+                retries: 3,
+                startPeriod: Duration.seconds(30),
+            },
+            portMappings: [{containerPort: 3000, protocol: Protocol.TCP}]
         });
 
-        const service = new FargateService(this, 'SimpleShopUiService', {
+        const service = new ApplicationLoadBalancedFargateService(this, 'SimpleShopUiService', {
             cluster,
             serviceName: 'SimpleShopUiService',
             taskDefinition: taskDef,
+            securityGroups: [albSecurityGroup],
+            publicLoadBalancer: true,
+            listenerPort: 30,
+            protocol: ApplicationProtocol.HTTP,
+            loadBalancerName: 'SimpleShopUiAlb',
+            assignPublicIp: true,
             deploymentController: {
-                type: DeploymentControllerType.CODE_DEPLOY
+                type: DeploymentControllerType.CODE_DEPLOY,
             },
-        })
+        });
 
-        new ComputeDeploymentResources(this, 'ComputeDeploymentResources', {
+        new ComputeDeploymentResources(this, 'SimpleShopUiDeploymentResources', {
             defaultVpc,
             service
-        })
+        });
     }
 }
 
@@ -85,66 +116,45 @@ export class SimpleShopUiComputeStack extends Stack {
 class ComputeDeploymentResources extends Construct {
     constructor(scope: Construct, id: string, props: {
         defaultVpc: IVpc,
-        service: FargateService
+        service: ApplicationLoadBalancedFargateService,
     }) {
         super(scope, id);
 
         const defaultVpc = props.defaultVpc;
 
-        const albSecurityGroup = new SecurityGroup(this, 'SimpleShopUiAlbSg', {
+        const greenTg = new ApplicationTargetGroup(this, 'SimpleShopUiAlbGreeneTargetGroup', {
             vpc: defaultVpc,
-            securityGroupName: 'SimpleShopUiAlbSg',
-            allowAllOutbound: true
-        })
-
-        albSecurityGroup.addIngressRule(Peer.ipv4('211.27.183.118/32'), Port.allTraffic());
-
-        const alb = new ApplicationLoadBalancer(this, 'SimpleShopUiAlb', {
-            vpc: defaultVpc,
-            loadBalancerName: 'SimpleShopUiAlb',
-            securityGroup: albSecurityGroup,
-            internetFacing: true
-        });
-
-        const greenTg = new ApplicationTargetGroup(this, 'SimpleShopUiAlbBlueTargetGroup', {
-            vpc: defaultVpc,
-            targetGroupName: 'SimpleShopUiAlbBlueTargetGroup',
-            port: 3000,
+            targetGroupName: 'SimpleShopUiAlbGreeneTargetGroup',
+            targetType: TargetType.IP,
             protocol: ApplicationProtocol.HTTP
         });
 
-        const blueTg = new ApplicationTargetGroup(this, 'SimpleShopUiAlbGreenTargetGroup', {
-            vpc: defaultVpc,
-            targetGroupName: 'SimpleShopUiAlbGreenTargetGroup',
-            port: 3000,
-            protocol: ApplicationProtocol.HTTP
-        })
-
-        const listener = new ApplicationListener(this, 'SimpleShopUiListener', {
-            loadBalancer: alb,
-            port: 3000,
+        const greenListener = props.service.loadBalancer.addListener('SimpleShopUiAlbGreenListener', {
             protocol: ApplicationProtocol.HTTP,
-            open: true,
-            defaultTargetGroups: [
-                greenTg,
-                blueTg
-            ]
-        })
+            port: 3030,
+            defaultTargetGroups: [greenTg],
+        });
+
+        greenListener.addAction('SimpleShopUiAlbGreenListenerAction', {
+            action: ListenerAction.forward([greenTg]),
+        });
 
         const application = new EcsApplication(this, 'SimpleShopUiEcsApplication', {
             applicationName: 'SimpleShopUiEcsApplication',
         });
 
         new EcsDeploymentGroup(this, 'SimpleShopUiEcsDeploymentGroup', {
-            service: props.service,
+            service: props.service.service,
             application,
             deploymentGroupName: 'SimpleShopUiEcsDeploymentGroup',
             deploymentConfig: EcsDeploymentConfig.ALL_AT_ONCE,
             blueGreenDeploymentConfig: {
+                blueTargetGroup: props.service.targetGroup,
                 greenTargetGroup: greenTg,
-                blueTargetGroup: blueTg,
-                listener,
-            }
-        })
+                listener: props.service.listener,
+                testListener: greenListener,
+                terminationWaitTime: Duration.minutes(5),
+            },
+        });
     }
 }

@@ -5,6 +5,6 @@ Resources:
       Properties:
         TaskDefinition: <TASK_DEFINITION>
         LoadBalancerInfo:
-          ContainerName: "simple-shop-ui"
+          ContainerName: "simple-shop-ui-container"
           ContainerPort: 3000
         PlatformVersion: "LATEST"
