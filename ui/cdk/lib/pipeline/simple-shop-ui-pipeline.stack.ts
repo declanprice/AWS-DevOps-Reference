@@ -50,6 +50,7 @@ export class SimpleShopUiPipelineStack extends Stack {
 
         const pipeline = new CodePipeline(this, 'CodePipeline', {
             synth: shell,
+
             synthCodeBuildDefaults: {
                 rolePolicy: [
                     new PolicyStatement({
@@ -76,6 +77,7 @@ export class SimpleShopUiPipelineStack extends Stack {
                 }
             }),
         });
+
 
         const stage = pipeline.addStage(new SimpleShopUiComputeStage(this, 'SimpleShopUiComputeStage', props));
 

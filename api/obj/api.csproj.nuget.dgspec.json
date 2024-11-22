@@ -44,9 +44,21 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "Marten": {
+              "target": "Package",
+              "version": "[7.33.0, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[9.0.0, )"
+            },
+            "WolverineFx": {
+              "target": "Package",
+              "version": "[3.3.0, )"
+            },
+            "WolverineFx.Marten": {
+              "target": "Package",
+              "version": "[3.3.0, )"
             }
           },
           "imports": [

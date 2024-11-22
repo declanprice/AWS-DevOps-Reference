@@ -58,10 +58,10 @@ export class SimpleShopUiComputeStack extends Stack {
         });
 
 
-        /** Important to understand!
+        /** Important to understand!!
          *
-         * This task definition and container is only created on the first stack creation.  Subsequent task definition revisions will be created
-         when the code deploy action is submitted in the pipeline.
+         * This task definition and container image is only created on the first run of 'cdk deploy'. Subsequent images are only created and pushed to ecr during the pipeline run, task
+         * definition revisions are created when the ECS deployment action is run.
          */
         const taskDef = new TaskDefinition(
             this, 'SimpleShopUiTaskDefinition', {
@@ -116,7 +116,6 @@ export class SimpleShopUiComputeStack extends Stack {
         });
     }
 }
-
 
 class ComputeDeploymentResources extends Construct {
     constructor(scope: Construct, id: string, props: {
