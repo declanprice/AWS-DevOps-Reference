@@ -1,5 +1,5 @@
 import {Construct} from 'constructs';
-import {Duration, Stack, StackProps} from "aws-cdk-lib";
+import {CfnParameter, Duration, Stack, StackProps} from "aws-cdk-lib";
 import {
     Cluster,
     Compatibility,
@@ -19,10 +19,16 @@ import {
 import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {EcsApplication, EcsDeploymentConfig, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
 import {ApplicationLoadBalancedFargateService} from "aws-cdk-lib/aws-ecs-patterns";
+import {Repository} from "aws-cdk-lib/aws-ecr";
 
 export class AppComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
+
+        const tagParam = new CfnParameter(this, 'Tag', {
+            type: 'string',
+            description: 'tag'
+        });
 
         const defaultVpc = Vpc.fromLookup(this, 'DefaultVpc', {
             isDefault: true
@@ -75,7 +81,7 @@ export class AppComputeStack extends Stack {
 
         taskDef.addContainer('AppContainer', {
             containerName: 'app-container',
-            image: ContainerImage.fromAsset('.'),
+            image: ContainerImage.fromEcrRepository(Repository.fromRepositoryName(this, 'AppContainerRepository', 'app-ecr-repository'), tagParam.valueAsString),
             cpu: 256,
             memoryLimitMiB: 512,
             essential: true,

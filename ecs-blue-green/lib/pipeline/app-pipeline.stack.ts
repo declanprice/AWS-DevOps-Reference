@@ -110,9 +110,12 @@ export class AppPipelineStack extends Stack {
                         }
                     },
                     artifacts: {
-                        name: 'OutputArtifact',
-                        files: ['ecs-blue-green/**/*'],
                         'secondary-artifacts': {
+                            'OutputArtifact': {
+                                name: 'OutputArtifact',
+                                files: ['ecs-blue-green/**/*'],
+                                'discard-paths': 'no'
+                            },
                             'CodeDeployArtifact': {
                                 name: 'CodeDeployArtifact',
                                 files: ['ecs-blue-green/code_deploy/*'],
@@ -163,6 +166,9 @@ export class AppPipelineStack extends Stack {
             region: this.region,
             account: this.account,
             adminPermissions: true,
+            parameterOverrides: {
+                'tag': sourceAction.variables.commitId
+            },
             templatePath: outputArtifact.atPath('ecs-blue-green/cdk.out/AppComputeStack.template.json')
         }));
 
