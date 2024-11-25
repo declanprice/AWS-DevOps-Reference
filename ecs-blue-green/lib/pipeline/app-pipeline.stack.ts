@@ -26,6 +26,8 @@ export class AppPipelineStack extends Stack {
 
         const outputArtifact = new Artifact('OutputArtifact');
 
+        const codeDeployArtifact = new Artifact('CodeDeployArtifact');
+
         const sourceAction = new CodeStarConnectionsSourceAction(
             {
                 actionName: "Source",
@@ -71,6 +73,7 @@ export class AppPipelineStack extends Stack {
             input: sourceArtifact,
             outputs: [
                 outputArtifact,
+                codeDeployArtifact,
             ],
             project: new Project(this, 'AppPipelineBuildProject', {
                 projectName: 'AppPipelineBuildProject',
@@ -109,6 +112,13 @@ export class AppPipelineStack extends Stack {
                     artifacts: {
                         name: 'OutputArtifact',
                         files: ['ecs-blue-green/**/*'],
+                        'secondary-artifacts': {
+                            'CodeDeployArtifact': {
+                                name: 'CodeDeployArtifact',
+                                files: ['ecs-blue-green/code_deploy/*'],
+                                'discard-paths': 'yes'
+                            }
+                        }
                     }
                 })
             }),
@@ -178,8 +188,8 @@ export class AppPipelineStack extends Stack {
                         })
                     },
                 }),
-                appSpecTemplateFile: outputArtifact.atPath('ecs-blue-green/code_deploy'),
-                taskDefinitionTemplateFile: outputArtifact.atPath('ecs-blue-green/code_deploy'),
+                appSpecTemplateInput: codeDeployArtifact,
+                taskDefinitionTemplateInput: codeDeployArtifact,
                 deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
                     this,
                     'AppEcsDeploymentGroup',
