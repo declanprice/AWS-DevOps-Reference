@@ -9,6 +9,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
+    "start": "npx tsx src/index.ts",
     "deploy-dev": "cdk deploy AppComputeStack"
   },
   "devDependencies": {
