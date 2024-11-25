@@ -132,13 +132,14 @@ export class AppPipelineStack extends Stack {
                                 `docker build -t $GIT_COMMIT_ID .`,
                                 `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
                                 `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-                                `./code_deploy/setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
+                                `./code_deploy/setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
+                                'ls'
                             ]
                         }
                     },
                     artifacts: {
                         name: 'OutputArtifact',
-                        files: ['ecs-blue-green/**'],
+                        files: ['ecs-blue-green/**/*'],
                     }
                 })
             }),
