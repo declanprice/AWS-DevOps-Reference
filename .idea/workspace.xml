@@ -6,6 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="2e60c07d-2aa9-486b-9a91-ea44228d9f53" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ecs-blue-green/cdk.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/cdk.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ecs-blue-green/lib/compute/app-compute.stage.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/ecs-blue-green/lib/pipeline/app-pipeline.stack.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/lib/pipeline/app-pipeline.stack.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -90,7 +92,7 @@
       <workItem from="1731981884222" duration="98000" />
       <workItem from="1731981998740" duration="3918000" />
       <workItem from="1732401725256" duration="706000" />
-      <workItem from="1732491600932" duration="8121000" />
+      <workItem from="1732491600932" duration="8686000" />
     </task>
     <servers />
   </component>

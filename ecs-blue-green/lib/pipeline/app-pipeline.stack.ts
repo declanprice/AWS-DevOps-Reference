@@ -1,22 +1,21 @@
 import {Construct} from 'constructs';
 import {RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
-import {AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
+import {AccountPrincipal, AnyPrincipal, Effect, PolicyDocument, PolicyStatement, Role} from "aws-cdk-lib/aws-iam";
 import {Repository} from "aws-cdk-lib/aws-ecr";
 import {
     CloudFormationCreateUpdateStackAction,
-    CodeBuildAction,
-    CodeStarConnectionsSourceAction
+    CodeBuildAction, CodeDeployEcsDeployAction,
+    CodeStarConnectionsSourceAction, ManualApprovalAction
 } from "aws-cdk-lib/aws-codepipeline-actions";
-import {Artifact, Pipeline, PipelineType, ProviderType} from "aws-cdk-lib/aws-codepipeline";
+import {Artifact, Pipeline, PipelineType} from "aws-cdk-lib/aws-codepipeline";
 import {BuildEnvironmentVariableType, BuildSpec, Project} from "aws-cdk-lib/aws-codebuild";
+import {EcsApplication, EcsDeploymentGroup} from "aws-cdk-lib/aws-codedeploy";
 
 export class AppPipelineStack extends Stack {
     constructor(scope: Construct, id: string, props: StackProps) {
         super(scope, id, props);
 
-        const githubConnectionArn = this.node.tryGetContext('githubConnectionArn') as string;
-
-        // const githubRepository = this.node.tryGetContext('githubRepository') as string;
+        const github = this.node.tryGetContext('github');
 
         const ecrRepository = new Repository(this, 'AppEcrRepository', {
             repositoryName: 'app-ecr-repository',
@@ -27,33 +26,13 @@ export class AppPipelineStack extends Stack {
 
         const outputArtifact = new Artifact('OutputArtifact');
 
-        // const shell = new ShellStep('ShellStep', {
-        //     input: source,
-        //     installCommands: ['cd ui', 'cd cdk', 'npm install', 'npm run cdk synth', 'cd ..'],
-        //     commands: [
-        //         `aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin ${ecrRepository.repositoryUri}`,
-        //         `docker build -t $GIT_COMMIT_ID .`,
-        //         `docker tag $GIT_COMMIT_ID ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-        //         `docker push ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`,
-        //         `./code_deploy/setup.sh ${ecrRepository.repositoryUri}:$GIT_COMMIT_ID`
-        //     ],
-        //     primaryOutputDirectory: 'ui/cdk/cdk.out',
-        //     env: {
-        //         AWS_ACCOUNT: this.account,
-        //         AWS_REGION: this.region,
-        //         GIT_COMMIT_ID: source.sourceAttribute('CommitId')
-        //     },
-        // });
-        //
-        // shell.addOutputDirectory('ui/code_deploy');
-
         const sourceAction = new CodeStarConnectionsSourceAction(
             {
                 actionName: "Source",
-                connectionArn: githubConnectionArn,
+                connectionArn: github.connectionArn,
                 output: sourceArtifact,
-                owner: "declanprice",
-                repo: 'AWS-DevOps-Reference',
+                owner: github.owner,
+                repo: github.repo,
                 branch: 'main'
             }
         );
@@ -76,16 +55,6 @@ export class AppPipelineStack extends Stack {
                     }),
                 }
             }),
-            // triggers: [{
-            //     providerType: ProviderType.CODE_STAR_SOURCE_CONNECTION,
-            //     gitConfiguration: {
-            //         sourceAction: sourceAction,
-            //         pushFilter: [{
-            //             // branchesIncludes: ['main'],
-            //             // filePathsIncludes: ['ecs-blue-green/**']
-            //         }]
-            //     }
-            // }]
         });
 
         pipeline.addStage({
@@ -187,62 +156,47 @@ export class AppPipelineStack extends Stack {
             templatePath: outputArtifact.atPath('ecs-blue-green/cdk.out/AppComputeStack.template.json')
         }));
 
-        //     stage.addAction(new ManualApprovalAction({
-        //         actionName: 'ManualApproval',
-        //         runOrder: 3
-        //     }));
-        //
-        //     stage.addAction(new CodeDeployEcsDeployAction({
-        //             actionName: 'Deploy',
-        //             role: new Role(this, 'SimpleShopUiCodeDeployRole', {
-        //                 roleName: 'SimpleShopUiCodeDeployRole',
-        //                 assumedBy: new AccountPrincipal(Stack.of(this).account),
-        //                 inlinePolicies: {
-        //                     'access': new PolicyDocument({
-        //                         statements: [
-        //                             new PolicyStatement({
-        //                                 effect: Effect.ALLOW,
-        //                                 resources: ['*'],
-        //                                 actions: ['*']
-        //                             })
-        //                         ]
-        //                     })
-        //                 },
-        //             }),
-        //             appSpecTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
-        //             taskDefinitionTemplateInput: new Artifact('ShellStep_ui_code_deploy'),
-        //             deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
-        //                 this,
-        //                 'SimpleShopUiEcsDeploymentGroup',
-        //                 {
-        //                     deploymentGroupName: 'SimpleShopUiEcsDeploymentGroup',
-        //                     application: EcsApplication.fromEcsApplicationName(
-        //                         this,
-        //                         'SimpleShopUiEcsApplication',
-        //                         'SimpleShopUiEcsApplication'
-        //                     ),
-        //                 }
-        //             ),
-        //             runOrder: 4,
-        //         })
-        //     );
-        // }
+        devStage.addAction(new ManualApprovalAction({
+            actionName: 'ManualApproval',
+            runOrder: 3
+        }));
+
+        devStage.addAction(new CodeDeployEcsDeployAction({
+                actionName: 'Deploy',
+                role: new Role(this, 'AppCodeDeployRole', {
+                    roleName: 'AppCodeDeployRole',
+                    assumedBy: new AccountPrincipal(Stack.of(this).account),
+                    inlinePolicies: {
+                        'access': new PolicyDocument({
+                            statements: [
+                                new PolicyStatement({
+                                    effect: Effect.ALLOW,
+                                    resources: ['*'],
+                                    actions: ['*']
+                                })
+                            ]
+                        })
+                    },
+                }),
+                appSpecTemplateInput: outputArtifact,
+                appSpecTemplateFile: outputArtifact.atPath('ecs-blue-green/code_deploy/appspec.yaml'),
+                taskDefinitionTemplateInput: outputArtifact,
+                taskDefinitionTemplateFile: outputArtifact.atPath('ecs-blue-green/code_deploy/taskdef.json'),
+                deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
+                    this,
+                    'AppEcsDeploymentGroup',
+                    {
+                        deploymentGroupName: 'AppEcsDeploymentGroup',
+                        application: EcsApplication.fromEcsApplicationName(
+                            this,
+                            'AppEcsApplication',
+                            'AppEcsApplication'
+                        ),
+                    }
+                ),
+                runOrder: 4,
+            })
+        );
     }
 }
 
-// class EcsCodeDeployStep extends Step implements ICodePipelineActionFactory {
-//     constructor(readonly scope: Construct) {
-//         super('CodeDeployStep')
-//
-//         this.discoverReferencedOutputs({
-//             env: {},
-//         })
-//     }
-//
-//     public produceAction(stage: IStage): CodePipelineActionFactoryResult {
-//         stage.addAction(
-//
-//
-//         return {runOrdersConsumed: 1}
-//     }
-// }
