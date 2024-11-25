@@ -25,7 +25,7 @@ export class AppComputeStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
-        const tagParam = new CfnParameter(this, 'Tag', {
+        const tagParam = new CfnParameter(this, 'tag', {
             type: 'String',
             description: 'tag'
         });
