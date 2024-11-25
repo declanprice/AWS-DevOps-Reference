@@ -138,7 +138,7 @@ export class AppPipelineStack extends Stack {
                     },
                     artifacts: {
                         name: 'OutputArtifact',
-                        files: ['ecs-blue-green'],
+                        files: ['ecs-blue-green/*'],
                     }
                 })
             }),
