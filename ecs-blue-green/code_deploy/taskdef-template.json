@@ -1,0 +1,24 @@
+{
+  "executionRoleArn": "arn:aws:iam::518424097895:role/AppExecutionRole",
+  "containerDefinitions": [
+    {
+      "essential": true,
+      "image": "<IMAGE_NAME>",
+      "name": "app-container",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ],
+  "cpu": "256",
+  "family": "app-container-family",
+  "memory": "512",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ]
+}
