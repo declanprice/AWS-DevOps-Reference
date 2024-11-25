@@ -18,8 +18,8 @@ export class AppPipelineStack extends Stack {
 
         // const githubRepository = this.node.tryGetContext('githubRepository') as string;
 
-        const ecrRepository = new Repository(this, 'SimpleShopUiEcrRepository', {
-            repositoryName: 'simple-shop-ui-ecr-repository',
+        const ecrRepository = new Repository(this, 'AppEcrRepository', {
+            repositoryName: 'app-ecr-repository',
             removalPolicy: RemovalPolicy.DESTROY,
         });
 
@@ -53,7 +53,7 @@ export class AppPipelineStack extends Stack {
                 connectionArn: githubConnectionArn,
                 output: sourceArtifact,
                 owner: "declanprice",
-                repo: 'simple-shop',
+                repo: 'AWS-DevOps-Reference',
                 branch: 'main'
             }
         );
