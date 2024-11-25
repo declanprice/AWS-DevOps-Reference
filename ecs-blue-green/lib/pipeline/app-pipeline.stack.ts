@@ -178,9 +178,7 @@ export class AppPipelineStack extends Stack {
                         })
                     },
                 }),
-                appSpecTemplateInput: outputArtifact,
                 appSpecTemplateFile: outputArtifact.atPath('ecs-blue-green/code_deploy/appspec.yaml'),
-                taskDefinitionTemplateInput: outputArtifact,
                 taskDefinitionTemplateFile: outputArtifact.atPath('ecs-blue-green/code_deploy/taskdef.json'),
                 deploymentGroup: EcsDeploymentGroup.fromEcsDeploymentGroupAttributes(
                     this,
