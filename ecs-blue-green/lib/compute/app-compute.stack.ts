@@ -63,7 +63,6 @@ export class AppComputeStack extends Stack {
             clusterName: 'AppFargateCluster',
         });
 
-
         /** Important to understand!!
          *
          * This task definition and container image is only created on the first run of 'cdk deploy'. Subsequent images are only created and pushed to ecr during the pipeline run, task
@@ -107,7 +106,7 @@ export class AppComputeStack extends Stack {
             taskDefinition: taskDef,
             securityGroups: [albSecurityGroup],
             publicLoadBalancer: true,
-            listenerPort: 8080,
+            listenerPort: 80,
             protocol: ApplicationProtocol.HTTP,
             loadBalancerName: 'AppAlb',
             assignPublicIp: true,
