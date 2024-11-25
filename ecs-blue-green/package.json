@@ -9,7 +9,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "deploy-dev": "cdk deploy SimpleShopUiPipelineStack/SimpleShopUiComputeStage/SimpleShopUiComputeStack"
+    "deploy-dev": "cdk deploy AppComputeStack"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",

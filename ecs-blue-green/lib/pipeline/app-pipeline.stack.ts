@@ -25,7 +25,7 @@ export class AppPipelineStack extends Stack {
 
         const sourceArtifact = new Artifact('SourceArtifact');
 
-        const outputArtifact = new Artifact('Output');
+        const outputArtifact = new Artifact('OutputArtifact');
 
         // const shell = new ShellStep('ShellStep', {
         //     input: source,
@@ -137,6 +137,7 @@ export class AppPipelineStack extends Stack {
                         }
                     },
                     artifacts: {
+                        name: 'OutputArtifact',
                         files: ['ecs-blue-green'],
                     }
                 })
