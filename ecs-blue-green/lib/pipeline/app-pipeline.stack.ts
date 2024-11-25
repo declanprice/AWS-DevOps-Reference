@@ -76,16 +76,16 @@ export class AppPipelineStack extends Stack {
                     }),
                 }
             }),
-            triggers: [{
-                providerType: ProviderType.CODE_STAR_SOURCE_CONNECTION,
-                gitConfiguration: {
-                    sourceAction: sourceAction,
-                    pullRequestFilter: [{
-                        branchesIncludes: ['main'],
-                        filePathsIncludes: ['ecs-blue-green/**']
-                    }]
-                }
-            }]
+            // triggers: [{
+            //     providerType: ProviderType.CODE_STAR_SOURCE_CONNECTION,
+            //     gitConfiguration: {
+            //         sourceAction: sourceAction,
+            //         pushFilter: [{
+            //             // branchesIncludes: ['main'],
+            //             // filePathsIncludes: ['ecs-blue-green/**']
+            //         }]
+            //     }
+            // }]
         });
 
         pipeline.addStage({
