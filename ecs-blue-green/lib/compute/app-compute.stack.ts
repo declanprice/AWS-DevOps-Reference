@@ -107,7 +107,7 @@ export class AppComputeStack extends Stack {
             taskDefinition: taskDef,
             securityGroups: [albSecurityGroup],
             publicLoadBalancer: true,
-            listenerPort: 30,
+            listenerPort: 8080,
             protocol: ApplicationProtocol.HTTP,
             loadBalancerName: 'AppAlb',
             assignPublicIp: true,
@@ -141,7 +141,7 @@ class ComputeDeploymentResources extends Construct {
 
         const greenListener = props.service.loadBalancer.addListener('AppAlbGreenListener', {
             protocol: ApplicationProtocol.HTTP,
-            port: 3030,
+            port: 8080,
             defaultTargetGroups: [greenTg],
         });
 
