@@ -6,7 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="2e60c07d-2aa9-486b-9a91-ea44228d9f53" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ecs-blue-green/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +58,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "preferences.pluginManager",
-    "ts.external.directory.path": "/Users/declanprice/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
+    "ts.external.directory.path": "/Users/declanprice/Desktop/Github/AWS-DevOps-Reference/ecs-blue-green/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -90,7 +89,7 @@
       <workItem from="1731981884222" duration="98000" />
       <workItem from="1731981998740" duration="3918000" />
       <workItem from="1732401725256" duration="706000" />
-      <workItem from="1732491600932" duration="15335000" />
+      <workItem from="1732491600932" duration="16673000" />
     </task>
     <servers />
   </component>
