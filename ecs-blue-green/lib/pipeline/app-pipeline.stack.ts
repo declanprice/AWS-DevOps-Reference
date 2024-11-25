@@ -82,7 +82,7 @@ export class AppPipelineStack extends Stack {
                     sourceAction: sourceAction,
                     pullRequestFilter: [{
                         branchesIncludes: ['main'],
-                        filePathsIncludes: ['ui/**']
+                        filePathsIncludes: ['ecs-blue-green/**']
                     }]
                 }
             }]

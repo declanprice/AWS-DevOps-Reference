@@ -5,115 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2e60c07d-2aa9-486b-9a91-ea44228d9f53" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ecs-blue-green/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ecs-blue-green/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/indexLayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.idea/.idea.api.dir/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.idea/.idea.api.dir/.idea/aws.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.idea/.idea.api.dir/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.idea/.idea.api.dir/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.idea/.idea.api.dir/.idea/indexLayout.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/.idea/.idea.api.dir/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/Controllers/WeatherForecastController.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/Folder.DotSettings.user" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/Models/Command/Customer.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/Models/Command/Product.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/Program.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/Properties/launchSettings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/WeatherForecast.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/api.csproj" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/api.http" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/appsettings.Development.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/appsettings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/Microsoft.AspNetCore.OpenApi.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/Microsoft.OpenApi.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/api" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/api.deps.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/api.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/api.pdb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/api.runtimeconfig.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/api.staticwebassets.endpoints.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/appsettings.Development.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/bin/Debug/net9.0/appsettings.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/docker-compose.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/.NETCoreApp,Version=v9.0.AssemblyAttributes.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.AssemblyInfo.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.AssemblyInfoInputs.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.GeneratedMSBuildEditorConfig.editorconfig" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.GlobalUsings.g.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.MvcApplicationPartsAssemblyInfo.cache" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/.dockerignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.MvcApplicationPartsAssemblyInfo.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.assets.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.csproj.AssemblyReference.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.csproj.CoreCompileInputs.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.csproj.FileListAbsolute.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.csproj.Up2Date" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.genruntimeconfig.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/api.pdb" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/apphost" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/ref/api.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/refint/api.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/staticwebassets.build.endpoints.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/staticwebassets.build.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/staticwebassets/msbuild.build.api.props" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/staticwebassets/msbuild.buildMultiTargeting.api.props" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/Debug/net9.0/staticwebassets/msbuild.buildTransitive.api.props" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/api.csproj.nuget.dgspec.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/api.csproj.nuget.g.props" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/api.csproj.nuget.g.targets" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/project.assets.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/project.nuget.cache" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/project.packagespec.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/rider.project.model.nuget.info" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/api/obj/rider.project.restore.info" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.dockerignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.eslintrc.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.idea/ui.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/simple-shop.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/Dockerfile" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/.npmignore" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/.npmignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/bin/cdk.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/bin/cdk.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/cdk.context.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/cdk.context.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/cdk.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/cdk.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/jest.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/jest.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/lib/compute/simple-shop-ui-compute.stack.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/lib/compute/app-compute.stack.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/lib/compute/simple-shop-ui-compute.stage.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/lib/compute/app-compute.stage.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/lib/pipeline/simple-shop-ui-pipeline.stack.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/lib/pipeline/app-pipeline.stack.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/test/cdk.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/test/cdk.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/cdk/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/tsconfig.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/code_deploy/appspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/code_deploy/appspec.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/code_deploy/setup.sh" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/code_deploy/setup.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/code_deploy/taskdef-template.json" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/code_deploy/taskdef-template.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/next.config.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/package.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/file.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/globe.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/next.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/vercel.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/public/window.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/app/favicon.ico" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/app/fonts/GeistMonoVF.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/app/fonts/GeistVF.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/app/globals.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/app/layout.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/app/page.module.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/src/app/page.tsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/ui/tsconfig.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/ecs-blue-green/lib/pipeline/app-pipeline.stack.ts" beforeDir="false" afterPath="$PROJECT_DIR$/ecs-blue-green/lib/pipeline/app-pipeline.stack.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -197,7 +89,7 @@
       <workItem from="1731981884222" duration="98000" />
       <workItem from="1731981998740" duration="3918000" />
       <workItem from="1732401725256" duration="706000" />
-      <workItem from="1732491600932" duration="3717000" />
+      <workItem from="1732491600932" duration="3909000" />
     </task>
     <servers />
   </component>
