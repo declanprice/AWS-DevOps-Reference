@@ -4,7 +4,7 @@ RUN dnf install -y nodejs
 
 WORKDIR /app
 
-COPY * /app
+COPY . /app
 
 RUN npm install
 
