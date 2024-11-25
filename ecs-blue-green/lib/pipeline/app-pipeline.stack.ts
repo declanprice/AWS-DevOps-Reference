@@ -138,7 +138,7 @@ export class AppPipelineStack extends Stack {
                     },
                     artifacts: {
                         name: 'OutputArtifact',
-                        files: ['ecs-blue-green/*'],
+                        files: ['ecs-blue-green/**'],
                     }
                 })
             }),
@@ -183,7 +183,7 @@ export class AppPipelineStack extends Stack {
             region: this.region,
             account: this.account,
             adminPermissions: true,
-            templatePath: outputArtifact.atPath('cdk.out/AppComputeStack.template.json')
+            templatePath: outputArtifact.atPath('ecs-blue-green/cdk.out/AppComputeStack.template.json')
         }));
 
         //     stage.addAction(new ManualApprovalAction({
